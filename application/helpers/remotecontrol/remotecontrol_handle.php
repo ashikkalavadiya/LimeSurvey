@@ -22,6 +22,69 @@ class remotecontrol_handle
         $this->controller = $controller;
     }
 
+    /**
+     * Show dialogs and create a new tokens table
+     * @param int $iSurveyId
+     * @return void
+     */
+    public function initParticipantTable($sSessionKey, $iSurveyId)
+    {
+        if ($this->_checkSessionKey($sSessionKey)) {
+            $aSurveyInfo = getSurveyInfo($iSurveyId);
+            $survey = Survey::model()->findByPk($iSurveyId);
+            if (!Permission::model()->hasSurveyPermission($iSurveyId, 'surveysettings', 'update') && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'create')) {
+                return array('success'=>false,'status' => 'Survey participants have not been initialised for this survey.');
+            }
+
+            //The survey participants table already exist ?
+            if ($survey->hasTokensTable) {
+                return array('success'=>false,'status' => 'Tokens already exist for this survey.');
+            }
+            Token::createTable($iSurveyId);
+            return array('success'=>true,'status' => 'Tokens table successfully created.');
+        }
+    }
+
+    /**
+     * Add a new survey administrator user
+     *
+     * @return void
+     */
+    public function adduser($sSessionKey, $user_data )
+    {
+        if ($this->_checkSessionKey($sSessionKey)) {
+            if (Permission::model()->hasGlobalPermission('superadmin', 'read')) {
+                $new_user = (string) $user_data['new_user'];
+                $new_email = (string) $user_data['new_email'];
+                $new_full_name = (string) $user_data['new_full_name'];
+
+                if (empty($new_user)) {
+                    return array('status' => 'A username was not supplied or the username is invalid.');
+                } elseif (User::model()->find("users_name=:users_name", array(':users_name'=>$new_user))) {
+                    return array('success'=>false,'status' => 'The username already exists.');
+                } else {                 
+        
+                    if (!validateEmailAddress($new_email)) {
+                        return array('success'=>false,'status' => 'The email address is not valid.');            
+                    }
+       
+                    $new_pass = createPassword();
+                    $iNewUID = User::model()->insertUser($new_user, $new_pass, $new_full_name, Yii::app()->session['loginID'], $new_email);
+                    if (!$iNewUID) {
+                        return array('success'=>false,'status' => 'Failed to add user');
+                    }
+
+                    Permission::model()->setGlobalPermission($iNewUID, 'auth_db');
+                    Permission::model()->setGlobalPermission($iNewUID, 'surveys',['create_p']);
+                    return array('success'=>true,'password' => $new_pass,'status' => 'User added successfully.');
+                }
+            }else{
+                return array('success'=>false,'status' => 'Invalid Permission');
+            }
+        } else {
+            return array('success'=>false,'status' => 'Invalid session key');
+        }
+    }
 
     /**
      * Create and return a session key.
