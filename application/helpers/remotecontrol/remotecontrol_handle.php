@@ -27,7 +27,7 @@ class remotecontrol_handle
      * @param int $iSurveyId
      * @return void
      */
-    public function initParticipantTable($sSessionKey, $iSurveyId)
+    public function init_participant_table($sSessionKey, $iSurveyId)
     {
         if ($this->_checkSessionKey($sSessionKey)) {
             $aSurveyInfo = getSurveyInfo($iSurveyId);
@@ -113,7 +113,7 @@ class remotecontrol_handle
 
                     Permission::model()->setGlobalPermission($iNewUID, 'auth_db');
                     Permission::model()->setGlobalPermission($iNewUID, 'surveys',['create_p']);
-                    return array('success'=>true,'password' => $new_pass,'status' => 'User added successfully.');
+                    return array('success'=>true, 'password' => $new_pass, 'id'=>$iNewUID ,'status' => 'User added successfully.');
                 }
             }else{
                 return array('success'=>false,'status' => 'Invalid Permission');
@@ -2339,7 +2339,7 @@ class remotecontrol_handle
                 } else {
                                     $aSurveyTitle = $oSurveyLanguageSettings->attributes['surveyls_title'];
                 }
-                $aData[] = array('sid'=>$oSurvey->primaryKey, 'surveyls_title'=>$aSurveyTitle, 'startdate'=>$oSurvey->attributes['startdate'], 'expires'=>$oSurvey->attributes['expires'], 'active'=>$oSurvey->attributes['active']);
+                $aData[] = array('owner_id'=>$oSurvey->attributes['owner_id'], 'sid'=>$oSurvey->primaryKey, 'surveyls_title'=>$aSurveyTitle, 'startdate'=>$oSurvey->attributes['startdate'], 'expires'=>$oSurvey->attributes['expires'], 'active'=>$oSurvey->attributes['active']);
             }
             return $aData;
         } else {
