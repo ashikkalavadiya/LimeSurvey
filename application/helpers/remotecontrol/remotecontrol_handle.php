@@ -355,6 +355,46 @@ class remotecontrol_handle
     }
 
     /**
+     * Import a survey in a known format
+     *
+     * Allow importing lss, csv, xls or survey zip archive in BASE 64 encoded.
+     *
+     * Failure status: Invalid session key, No permission, The import error
+     *
+     * @access public
+     * @param string $sSessionKey Auth Credentials
+     * @param string $iSurveyID String containing the BASE 64 encoded data of a lss, csv, txt or survey lsa archive
+     * @return int|array The ID of the new survey in case of success
+     */
+    public function export_survey_question($sSessionKey, $iSurveyID)
+    {
+        
+        
+        $aData['bFailed'] = false;
+        $survey = NULL;
+        
+        if (!$iSurveyID) {
+            $aData['sErrorMessage'] = "No survey ID has been provided. Cannot copy survey";
+            $aData['bFailed'] = true;
+        } elseif (!Survey::model()->findByPk($iSurveyID)) {
+            $aData['sErrorMessage'] = "Invalid survey ID";
+            $aData['bFailed'] = true;
+        } else {
+            Yii::app()->loadHelper('export');
+            $quexmllang = Survey::model()->findByPk($iSurveyID)->language;
+            $survey = quexml_export($iSurveyID, $quexmllang);
+            if ($survey) {
+                $survey = json_decode(json_encode((array) simplexml_load_string($survey)), 1);
+            }            
+        }
+
+        if ($aData['bFailed']) {
+            return array('status' => 'Surve export failed', 'error'=> $aData['sErrorMessage']);
+        } else {
+            return array('status' => 'OK', 'survey'=>$survey);
+        }
+    }
+    /**
      * RPC Routine to copy a survey.
      *
      * @access public
