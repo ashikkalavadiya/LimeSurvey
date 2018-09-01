@@ -182,7 +182,7 @@ return array(
             'css/displayParticipants.css',
         ),
         'js' => array(
-            'build/adminbasics.js',
+            'build/adminbasics'.(($debug > 0) ? '' : '.min').'.js',
         ),
         'depends' => array(
             'jquery',
@@ -263,6 +263,18 @@ return array(
         ),
         'depends' => array(
             'adminbasics',
+        )
+        ),
+
+    'decimalcustom' => array(
+        'devBaseUrl' => 'assets/packages/decimalcustom/',
+        'basePath' => 'core.decimalcustom',
+        'position' =>CClientScript::POS_BEGIN,
+        'js' => array(
+            'decimalcustom.js',
+        ),
+        'depends' => array(
+            'decimal',
         )
     )
 
