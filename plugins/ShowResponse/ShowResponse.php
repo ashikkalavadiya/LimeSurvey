@@ -33,7 +33,8 @@ class ShowResponse extends PluginBase {
             $data['user_id'] = Yii::app()->user->id;
             $data['user_name'] = $users->full_name; 
         }
-        $output = Yii::app()->curl->post('http://worddiagnostics.com/limesurvey-api/add-response', $data);
+        // Curl call to save response directly to worddiagnostic manager site.
+        $output = Yii::app()->curl->post('http://manager.worddiagnostics.com/limesurvey-api/add-response', $data);
         $event->getContent($this);
     }    
 }
